@@ -1,10 +1,10 @@
-package com.mrp_engine;
+package ManufacturingMRPEngine;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ManufacturingEnterpriseMrpEngineApplicationTests {
+class ManufacturingMrpEngineApplicationTests {
 
 	@Test
 	void contextLoads() {
