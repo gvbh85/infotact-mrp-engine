@@ -2,13 +2,13 @@ package ManufacturingMRPEngine.service;
 
 import ManufacturingMRPEngine.entity.Item;
 import ManufacturingMRPEngine.repository.ItemRepository;
-import lombok.RequiredArgsConstructor;
+// import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
+// @RequiredArgsConstructor
 public class ItemService {
 	
 	private final ItemRepository itemRepository;
