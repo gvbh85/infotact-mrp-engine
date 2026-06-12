@@ -6,6 +6,7 @@ import com.mrp_engine.entity.BomLink;
 import com.mrp_engine.entity.Item;
 import com.mrp_engine.repository.BomLinkRepository;
 import com.mrp_engine.repository.ItemRepository;
+import com.mrp_engine.exception.ResourceNotFoundException;
 
 import java.util.List;
 
@@ -38,12 +39,12 @@ public class BomLinkService {
         }
 
         Item parent = itemRepository.findById(parentItemId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Parent item not found: " + parentItemId));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Parent item not found: ", parentItemId));
 
         Item child = itemRepository.findById(childItemId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Child item not found: " + childItemId));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Child item not found: ", childItemId));
 
         BomLink link = new BomLink(parent, child, quantityRequired);
         return bomLinkRepository.save(link);

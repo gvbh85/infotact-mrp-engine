@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.mrp_engine.entity.Item;
 import com.mrp_engine.repository.ItemRepository;
+import com.mrp_engine.exception.ResourceNotFoundException;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class ItemService {
     // Get one item by ID
     public Item getItemById(Long id) {
         return itemRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Item not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Item", id));
     }
 
     // Create a new item
