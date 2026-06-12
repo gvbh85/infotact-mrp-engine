@@ -1,10 +1,11 @@
-package ManufacturingMRPEngine.service;
+package com.mrp_engine.service;
 
-import ManufacturingMRPEngine.entity.BomLink;
-import ManufacturingMRPEngine.entity.Item;
-import ManufacturingMRPEngine.repository.BomLinkRepository;
-import ManufacturingMRPEngine.repository.ItemRepository;
 import org.springframework.stereotype.Service;
+
+import com.mrp_engine.entity.BomLink;
+import com.mrp_engine.entity.Item;
+import com.mrp_engine.repository.BomLinkRepository;
+import com.mrp_engine.repository.ItemRepository;
 
 import java.util.List;
 

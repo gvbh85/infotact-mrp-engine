@@ -1,12 +1,13 @@
-package ManufacturingMRPEngine.controller;
+package com.mrp_engine.controller;
 
 import java.util.List;
 
-import ManufacturingMRPEngine.entity.Item;
-import ManufacturingMRPEngine.service.ItemService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.mrp_engine.entity.Item;
+import com.mrp_engine.service.ItemService;
 
 
 @RestController

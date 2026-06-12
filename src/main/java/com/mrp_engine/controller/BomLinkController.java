@@ -1,13 +1,14 @@
-package ManufacturingMRPEngine.controller;
+package com.mrp_engine.controller;
 
 import java.util.List;
 import java.util.Map;
 
-import ManufacturingMRPEngine.entity.BomLink;
-import ManufacturingMRPEngine.service.BomLinkService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.mrp_engine.entity.BomLink;
+import com.mrp_engine.service.BomLinkService;
 
 
 @RestController

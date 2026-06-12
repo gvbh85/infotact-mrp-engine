@@ -1,4 +1,4 @@
-package ManufacturingMRPEngine.enums;
+package com.mrp_engine.enums;
 
 public enum ItemType {
 	FINISHED_GOOD,

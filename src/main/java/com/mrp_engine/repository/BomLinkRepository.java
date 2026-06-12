@@ -1,8 +1,9 @@
-package ManufacturingMRPEngine.repository;
+package com.mrp_engine.repository;
 
-import ManufacturingMRPEngine.entity.BomLink;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.mrp_engine.entity.BomLink;
 
 import java.util.List;
 

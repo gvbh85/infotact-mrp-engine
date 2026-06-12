@@ -1,4 +1,4 @@
-package ManufacturingMRPEngine;
+package com.mrp_engine;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

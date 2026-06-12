@@ -1,9 +1,10 @@
-package ManufacturingMRPEngine.repository;
+package com.mrp_engine.repository;
 
-import ManufacturingMRPEngine.entity.Item;
-import ManufacturingMRPEngine.enums.ItemType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.mrp_engine.entity.Item;
+import com.mrp_engine.enums.ItemType;
 
 import java.util.List;
 

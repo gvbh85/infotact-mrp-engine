@@ -1,8 +1,9 @@
-package ManufacturingMRPEngine.entity;
+package com.mrp_engine.entity;
 
 import java.util.List;
 
-import ManufacturingMRPEngine.enums.ItemType;
+import com.mrp_engine.enums.ItemType;
+
 import jakarta.persistence.*;
 import lombok.*;
 
