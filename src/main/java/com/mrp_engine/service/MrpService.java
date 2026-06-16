@@ -10,14 +10,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class MrpService {
-	
-	private final ItemRepository itemRepository;
-	
+
+    private final ItemRepository    itemRepository;
     private final BomLinkRepository bomLinkRepository;
 
     public MrpService(ItemRepository itemRepository,
@@ -27,39 +28,97 @@ public class MrpService {
     }
 
     /**
-     * Main entry point — takes a productId and target quantity,
-     * returns a flat list of all raw materials needed.
+     * MAIN ENTRY POINT
+     * Takes productId + targetQuantity
+     * Returns flat list of all raw materials needed
      */
     public List<BomExplosionResult> explodeBom(Long productId,
                                                 Double targetQuantity) {
 
-        // Validate product exists
-        Item product = itemRepository.findById(productId)
+        // Step 1 — Validate product exists
+        itemRepository.findById(productId)
                 .orElseThrow(() ->
                     new ResourceNotFoundException("Item", productId));
 
-        // Map to accumulate quantities: itemId → totalQuantityNeeded
+        // Step 2 — Map to accumulate: itemId → total quantity needed
         Map<Long, Double> requirementsMap = new HashMap<>();
 
-        // TODO Day 7: recursive traversal goes here
-        // explodeRecursive(productId, targetQuantity, requirementsMap);
+        // Step 3 — Set to track visited items (circular reference guard)
+        Set<Long> visitedItems = new HashSet<>();
 
-        // TODO Day 7: convert map to result list
+        // Step 4 — Start recursive traversal
+        explodeRecursive(productId, targetQuantity,
+                         requirementsMap, visitedItems);
+
+        // Step 5 — Convert map to result list
         List<BomExplosionResult> results = new ArrayList<>();
+
+        for (Map.Entry<Long, Double> entry : requirementsMap.entrySet()) {
+
+            Long   itemId   = entry.getKey();
+            Double quantity = entry.getValue();
+
+            Item item = itemRepository.findById(itemId)
+                    .orElseThrow(() ->
+                        new ResourceNotFoundException("Item", itemId));
+
+            results.add(new BomExplosionResult(
+                    item.getId(),
+                    item.getName(),
+                    item.getType().name(),
+                    item.getUnitOfMeasure(),
+                    quantity
+            ));
+        }
 
         return results;
     }
 
     /**
-     * Recursive helper method — will be implemented on Day 7.
-     * Traverses BOM tree and accumulates quantities in the map.
+     * RECURSIVE HELPER METHOD
+     * Traverses BOM tree depth-first
+     * Multiplies quantities as it goes deeper
+     * Accumulates raw material totals in requirementsMap
      */
-    private void explodeRecursive(Long itemId, Double quantity, Map<Long, Double> requirementsMap) {
-        // TODO Day 7 implementation:
-        // 1. Get all BomLink children of this itemId
-        // 2. For each child: childQty = quantity × link.quantityRequired
-        // 3. If child has no children → add to requirementsMap
-        // 4. If child has children → recurse with childQty
+    private void explodeRecursive(Long itemId,
+                                   Double quantity,
+                                   Map<Long, Double> requirementsMap,
+                                   Set<Long> visitedItems) {
+
+        // ✅ Circular reference guard
+        if (visitedItems.contains(itemId)) {
+            throw new IllegalArgumentException(
+                "Circular reference detected in BOM for item id: " + itemId);
+        }
+
+        // Mark this item as visited
+        visitedItems.add(itemId);
+
+        // Get all children of this item from bom_link table
+        List<BomLink> children =
+                bomLinkRepository.findByParentItemId(itemId);
+
+        if (children.isEmpty()) {
+            // ✅ BASE CASE — no children means this is a Raw Material
+            // Add or accumulate quantity in the map
+            requirementsMap.merge(itemId, quantity, Double::sum);
+
+        } else {
+            // ✅ RECURSIVE CASE — has children, go deeper
+            for (BomLink link : children) {
+
+                Long   childId  = link.getChildItem().getId();
+                // Multiply quantity as we go deeper
+                Double childQty = quantity * link.getQuantityRequired();
+
+                // Recurse into the child
+                explodeRecursive(childId, childQty,
+                                 requirementsMap, visitedItems);
+            }
+        }
+
+        // Unmark after processing so sibling branches
+        // can visit the same item independently
+        visitedItems.remove(itemId);
     }
-	
 }
