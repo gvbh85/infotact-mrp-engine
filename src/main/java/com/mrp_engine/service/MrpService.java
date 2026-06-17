@@ -85,7 +85,7 @@ public class MrpService {
                                    Map<Long, Double> requirementsMap,
                                    Set<Long> visitedItems) {
 
-        // ✅ Circular reference guard
+        //  Circular reference guard
         if (visitedItems.contains(itemId)) {
             throw new IllegalArgumentException(
                 "Circular reference detected in BOM for item id: " + itemId);
@@ -99,7 +99,7 @@ public class MrpService {
                 bomLinkRepository.findByParentItemId(itemId);
 
         if (children.isEmpty()) {
-            // ✅ BASE CASE — no children means this is a Raw Material
+            //  BASE CASE — no children means this is a Raw Material
             // Add or accumulate quantity in the map
             requirementsMap.merge(itemId, quantity, Double::sum);
 
