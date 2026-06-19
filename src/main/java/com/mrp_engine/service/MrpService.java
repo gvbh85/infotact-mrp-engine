@@ -32,46 +32,81 @@ public class MrpService {
      * Takes productId + targetQuantity
      * Returns flat list of all raw materials needed
      */
-    public List<BomExplosionResult> explodeBom(Long productId,
-                                                Double targetQuantity) {
+    // public List<BomExplosionResult> explodeBom(Long productId,
+    //                                             Double targetQuantity) {
 
-        // Step 1 — Validate product exists
-        itemRepository.findById(productId)
-                .orElseThrow(() ->
-                    new ResourceNotFoundException("Item", productId));
+    //     // Step 1 — Validate product exists
+    //     itemRepository.findById(productId)
+    //             .orElseThrow(() ->
+    //                 new ResourceNotFoundException("Item", productId));
 
-        // Step 2 — Map to accumulate: itemId → total quantity needed
-        Map<Long, Double> requirementsMap = new HashMap<>();
+    //     // Step 2 — Map to accumulate: itemId → total quantity needed
+    //     Map<Long, Double> requirementsMap = new HashMap<>();
 
-        // Step 3 — Set to track visited items (circular reference guard)
-        Set<Long> visitedItems = new HashSet<>();
+    //     // Step 3 — Set to track visited items (circular reference guard)
+    //     Set<Long> visitedItems = new HashSet<>();
 
-        // Step 4 — Start recursive traversal
-        explodeRecursive(productId, targetQuantity,
-                         requirementsMap, visitedItems);
+    //     // Step 4 — Start recursive traversal
+    //     explodeRecursive(productId, targetQuantity,
+    //                      requirementsMap, visitedItems);
 
-        // Step 5 — Convert map to result list
-        List<BomExplosionResult> results = new ArrayList<>();
+    //     // Step 5 — Convert map to result list
+    //     List<BomExplosionResult> results = new ArrayList<>();
 
-        for (Map.Entry<Long, Double> entry : requirementsMap.entrySet()) {
+    //     for (Map.Entry<Long, Double> entry : requirementsMap.entrySet()) {
 
-            Long   itemId   = entry.getKey();
-            Double quantity = entry.getValue();
+    //         Long   itemId   = entry.getKey();
+    //         Double quantity = entry.getValue();
 
-            Item item = itemRepository.findById(itemId)
-                    .orElseThrow(() ->
-                        new ResourceNotFoundException("Item", itemId));
+    //         Item item = itemRepository.findById(itemId)
+    //                 .orElseThrow(() ->
+    //                     new ResourceNotFoundException("Item", itemId));
 
-            results.add(new BomExplosionResult(
-                    item.getId(),
-                    item.getName(),
-                    item.getType().name(),
-                    item.getUnitOfMeasure(),
-                    quantity
-            ));
-        }
+    //         results.add(new BomExplosionResult(
+    //                 item.getId(),
+    //                 item.getName(),
+    //                 item.getType().name(),
+    //                 item.getUnitOfMeasure(),
+    //                 quantity
+    //         ));
+    //     }
 
-        return results;
+    //     return results;
+    // }
+
+    // Updated code for the above method to handle the edge case of zero quantity
+    public List<BomExplosionResult> explodeBom(Long productId, Double targetQuantity) {
+
+    	//  Edge case — reject zero or negative quantities
+    	if (targetQuantity == null || targetQuantity <= 0) {
+    		throw new IllegalArgumentException(
+    				"Target quantity must be greater than zero.");
+    	}
+
+    	itemRepository.findById(productId)
+    		.orElseThrow(() ->
+    			new ResourceNotFoundException("Item", productId));
+
+    	Map<Long, Double> requirementsMap = new HashMap<>();
+    	Set<Long> visitedItems = new HashSet<>();
+
+    	explodeRecursive(productId, targetQuantity, requirementsMap, visitedItems);
+
+    	List<BomExplosionResult> results = new ArrayList<>();
+    	for (Map.Entry<Long, Double> entry : requirementsMap.entrySet()) {
+    		Long   itemId   = entry.getKey();
+    		Double quantity = entry.getValue();
+
+    		Item item = itemRepository.findById(itemId)
+    				.orElseThrow(() -> new ResourceNotFoundException("Item", itemId));
+
+    		results.add(new BomExplosionResult(
+    				item.getId(), item.getName(),
+    				item.getType().name(), item.getUnitOfMeasure(), quantity
+    				));
+    	}
+
+    	return results;
     }
 
     /**
