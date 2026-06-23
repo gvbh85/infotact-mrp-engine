@@ -1,6 +1,5 @@
 package com.mrp_engine.service;
 
-// import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import com.mrp_engine.entity.Item;
@@ -10,7 +9,6 @@ import com.mrp_engine.exception.ResourceNotFoundException;
 import java.util.List;
 
 @Service
-// @RequiredArgsConstructor
 public class ItemService {
 	
 	private final ItemRepository itemRepository;

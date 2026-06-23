@@ -36,7 +36,7 @@ public class Item {
     @JoinColumn(name = "parent_id")
     private Item parentItem;
 
-    // ✅ Reverse side — all children of this item
+    // Reverse side — all children of this item
     @OneToMany(mappedBy = "parentItem", cascade = CascadeType.ALL)
     private List<Item> childItems;
     
@@ -70,6 +70,10 @@ public class Item {
     
     public ItemType getType() {
     	return type;
+    }
+    
+    public Long getId() {
+        return id;
     }
     
 }

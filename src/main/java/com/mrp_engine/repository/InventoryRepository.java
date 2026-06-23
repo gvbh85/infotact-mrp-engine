@@ -14,6 +14,6 @@ public interface InventoryRepository extends JpaRepository<InventoryStatus, Long
 
     // Check if inventory record already exists for an item
     boolean existsByItemId(Long itemId);
-
+    
     
 }

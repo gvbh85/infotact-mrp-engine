@@ -18,13 +18,13 @@ import java.util.Set;
 @Service
 public class MrpService {
 
-    private final ItemRepository itemRepository;
-    private final BomLinkRepository bomLinkRepository;
-    private final InventoryService inventoryService;   // dependency
+    private final ItemRepository      itemRepository;
+    private final BomLinkRepository   bomLinkRepository;
+    private final InventoryService    inventoryService;   // NEW dependency
 
     public MrpService(ItemRepository itemRepository,
                       BomLinkRepository bomLinkRepository,
-                      InventoryService inventoryService) {   // parameter
+                      InventoryService inventoryService) {   // NEW parameter
         this.itemRepository    = itemRepository;
         this.bomLinkRepository = bomLinkRepository;
         this.inventoryService  = inventoryService;
@@ -59,11 +59,11 @@ public class MrpService {
                     .orElseThrow(() ->
                         new ResourceNotFoundException("Item", itemId));
 
-            //  NEW — fetch current stock for this raw material
+            // fetch current stock for this raw material
             Double onHandQuantity =
                     inventoryService.getOnHandQuantityOrZero(itemId);
 
-            //  NEW — calculate Net Requirement
+            // calculate Net Requirement
             Double netRequirement =
                     Math.max(0, grossRequirement - onHandQuantity);
 
