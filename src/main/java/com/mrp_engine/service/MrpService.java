@@ -18,101 +18,95 @@ import java.util.Set;
 @Service
 public class MrpService {
 
-    private final ItemRepository    itemRepository;
+    private final ItemRepository itemRepository;
     private final BomLinkRepository bomLinkRepository;
+    private final InventoryService inventoryService;   // dependency
 
     public MrpService(ItemRepository itemRepository,
-                      BomLinkRepository bomLinkRepository) {
+                      BomLinkRepository bomLinkRepository,
+                      InventoryService inventoryService) {   // parameter
         this.itemRepository    = itemRepository;
         this.bomLinkRepository = bomLinkRepository;
+        this.inventoryService  = inventoryService;
     }
 
-    /**
-     * MAIN ENTRY POINT
-     * Takes productId + targetQuantity
-     * Returns flat list of all raw materials needed
-     */
+    public List<BomExplosionResult> explodeBom(Long productId,
+                                                Double targetQuantity) {
 
-    // Updated code for the above method to handle the edge case of zero quantity
-    public List<BomExplosionResult> explodeBom(Long productId, Double targetQuantity) {
+        if (targetQuantity == null || targetQuantity <= 0) {
+            throw new IllegalArgumentException(
+                "Target quantity must be greater than zero.");
+        }
 
-    	//  Edge case — reject zero or negative quantities
-    	if (targetQuantity == null || targetQuantity <= 0) {
-    		throw new IllegalArgumentException(
-    				"Target quantity must be greater than zero.");
-    	}
+        itemRepository.findById(productId)
+                .orElseThrow(() ->
+                    new ResourceNotFoundException("Item", productId));
 
-    	itemRepository.findById(productId)
-    		.orElseThrow(() ->
-    			new ResourceNotFoundException("Item", productId));
+        Map<Long, Double> requirementsMap = new HashMap<>();
+        Set<Long> visitedItems = new HashSet<>();
 
-    	Map<Long, Double> requirementsMap = new HashMap<>();
-    	Set<Long> visitedItems = new HashSet<>();
+        explodeRecursive(productId, targetQuantity,
+                         requirementsMap, visitedItems);
 
-    	explodeRecursive(productId, targetQuantity, requirementsMap, visitedItems);
+        List<BomExplosionResult> results = new ArrayList<>();
 
-    	List<BomExplosionResult> results = new ArrayList<>();
-    	for (Map.Entry<Long, Double> entry : requirementsMap.entrySet()) {
-    		Long   itemId   = entry.getKey();
-    		Double quantity = entry.getValue();
+        for (Map.Entry<Long, Double> entry : requirementsMap.entrySet()) {
 
-    		Item item = itemRepository.findById(itemId)
-    				.orElseThrow(() -> new ResourceNotFoundException("Item", itemId));
+            Long   itemId           = entry.getKey();
+            Double grossRequirement = entry.getValue();
 
-    		results.add(new BomExplosionResult(
-    				item.getId(), item.getName(),
-    				item.getType().name(), item.getUnitOfMeasure(), quantity
-    				));
-    	}
+            Item item = itemRepository.findById(itemId)
+                    .orElseThrow(() ->
+                        new ResourceNotFoundException("Item", itemId));
 
-    	return results;
+            //  NEW — fetch current stock for this raw material
+            Double onHandQuantity =
+                    inventoryService.getOnHandQuantityOrZero(itemId);
+
+            //  NEW — calculate Net Requirement
+            Double netRequirement =
+                    Math.max(0, grossRequirement - onHandQuantity);
+
+            results.add(new BomExplosionResult(
+                    item.getId(),
+                    item.getName(),
+                    item.getType().name(),
+                    item.getUnitOfMeasure(),
+                    grossRequirement,
+                    onHandQuantity,
+                    netRequirement
+            ));
+        }
+
+        return results;
     }
 
-    /**
-     * RECURSIVE HELPER METHOD
-     * Traverses BOM tree depth-first
-     * Multiplies quantities as it goes deeper
-     * Accumulates raw material totals in requirementsMap
-     */
     private void explodeRecursive(Long itemId,
                                    Double quantity,
                                    Map<Long, Double> requirementsMap,
                                    Set<Long> visitedItems) {
 
-        //  Circular reference guard
         if (visitedItems.contains(itemId)) {
             throw new IllegalArgumentException(
                 "Circular reference detected in BOM for item id: " + itemId);
         }
 
-        // Mark this item as visited
         visitedItems.add(itemId);
 
-        // Get all children of this item from bom_link table
         List<BomLink> children =
                 bomLinkRepository.findByParentItemId(itemId);
 
         if (children.isEmpty()) {
-            //  BASE CASE — no children means this is a Raw Material
-            // Add or accumulate quantity in the map
             requirementsMap.merge(itemId, quantity, Double::sum);
-
         } else {
-            // ✅ RECURSIVE CASE — has children, go deeper
             for (BomLink link : children) {
-
                 Long   childId  = link.getChildItem().getId();
-                // Multiply quantity as we go deeper
                 Double childQty = quantity * link.getQuantityRequired();
-
-                // Recurse into the child
                 explodeRecursive(childId, childQty,
                                  requirementsMap, visitedItems);
             }
         }
 
-        // Unmark after processing so sibling branches
-        // can visit the same item independently
         visitedItems.remove(itemId);
     }
 }

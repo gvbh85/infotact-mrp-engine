@@ -10,18 +10,23 @@ public class BomExplosionResult {
     
     private String unitOfMeasure;
     
-    private Double requiredQuantity;
+    private Double grossRequirement;
+    private Double onHandQuantity;
+    private Double netRequirement;
 
     public BomExplosionResult() {}
 
     public BomExplosionResult(Long itemId, String itemName,
                                String itemType, String unitOfMeasure,
-                               Double requiredQuantity) {
+                               Double grossRequirement, Double onHandQuantity,
+                               Double netRequirement) {
         this.itemId           = itemId;
         this.itemName         = itemName;
         this.itemType         = itemType;
         this.unitOfMeasure    = unitOfMeasure;
-        this.requiredQuantity = requiredQuantity;
+        this.grossRequirement = grossRequirement;
+        this.onHandQuantity   = onHandQuantity;
+        this.netRequirement   = netRequirement;
     }
 
     // Getters
@@ -41,8 +46,16 @@ public class BomExplosionResult {
     	return unitOfMeasure; 
     }
     
-    public Double getRequiredQuantity() { 
-    	return requiredQuantity; 
+    public Double getGrossRequirement() { 
+    	return grossRequirement; 
+    }
+    
+    public Double getOnHandQuantity() { 
+    	return onHandQuantity; 
+    }
+    
+    public Double getNetRequirement() { 
+    	return netRequirement; 
     }
 
     
@@ -63,8 +76,16 @@ public class BomExplosionResult {
     	this.unitOfMeasure = unitOfMeasure; 
     }
     
-    public void setRequiredQuantity(Double requiredQuantity) { 
-    	this.requiredQuantity = requiredQuantity; 
+    public void setGrossRequirement(Double grossRequirement) { 
+    	this.grossRequirement = grossRequirement; 
+    }
+    
+    public void setOnHandQuantity(Double onHandQuantity) { 
+    	this.onHandQuantity = onHandQuantity; 
+    }
+    
+    public void setNetRequirement(Double netRequirement) { 
+    	this.netRequirement = netRequirement; 
     }
 	
 }
