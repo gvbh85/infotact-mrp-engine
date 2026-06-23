@@ -1,31 +1,64 @@
 package com.mrp_engine.controller;
-//Test comment to verify GitHub Pull Request workflow
-import com.mrp_engine.model.Item;
-import com.mrp_engine.repository.ItemRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.mrp_engine.entity.Item;
+import com.mrp_engine.service.ItemService;
+
+
 @RestController
-@RequestMapping("/api/v1/items")
-@CrossOrigin(origins = "*") // Allows React frontend connection later
+@RequestMapping("/api/items")
+@CrossOrigin(origins = "*")
 public class ItemController {
+	
+	private final ItemService itemService;
 
-    @Autowired
-    private ItemRepository itemRepository;
-
-    // 1. Get all manufacturing items
-    @GetMapping
-    public List<Item> getAllItems() {
-        return itemRepository.findAll();
+    public ItemController(ItemService itemService) {
+        this.itemService = itemService;
     }
 
-    // 2. Add a new component to the system
+    // GET all items
+    @GetMapping
+    public ResponseEntity<List<Item>> getAllItems() {
+        return ResponseEntity.ok(itemService.getAllItems());
+    }
+
+    // GET single item by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Item> getItemById(@PathVariable Long id) {
+        return ResponseEntity.ok(itemService.getItemById(id));
+    }
+
+    // GET only finished goods (top-level items)
+    @GetMapping("/finished-goods")
+    public ResponseEntity<List<Item>> getFinishedGoods() {
+        return ResponseEntity.ok(itemService.getFinishedGoods());
+    }
+
+    // POST create new item
     @PostMapping
     public ResponseEntity<Item> createItem(@RequestBody Item item) {
-        Item savedItem = itemRepository.save(item);
-        return ResponseEntity.ok(savedItem);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(itemService.createItem(item));
     }
+
+    // PUT update existing item
+    @PutMapping("/{id}")
+    public ResponseEntity<Item> updateItem(@PathVariable Long id,
+                                            @RequestBody Item item) {
+        return ResponseEntity.ok(itemService.updateItem(id, item));
+    }
+
+    // DELETE item
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteItem(@PathVariable Long id) {
+        itemService.deleteItem(id);
+        return ResponseEntity.ok("Item deleted successfully.");
+    }
+	
 }
