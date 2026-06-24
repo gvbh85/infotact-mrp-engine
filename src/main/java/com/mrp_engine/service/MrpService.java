@@ -18,16 +18,19 @@ import java.util.Set;
 @Service
 public class MrpService {
 
-    private final ItemRepository itemRepository;
-    private final BomLinkRepository bomLinkRepository;
-    private final InventoryService inventoryService;   // dependency
+    private final ItemRepository       itemRepository;
+    private final BomLinkRepository    bomLinkRepository;
+    private final InventoryService     inventoryService;
+    private final PurchaseOrderService purchaseOrderService;  
 
     public MrpService(ItemRepository itemRepository,
                       BomLinkRepository bomLinkRepository,
-                      InventoryService inventoryService) {   // parameter
-        this.itemRepository    = itemRepository;
-        this.bomLinkRepository = bomLinkRepository;
-        this.inventoryService  = inventoryService;
+                      InventoryService inventoryService,
+                      PurchaseOrderService purchaseOrderService) { 
+        this.itemRepository       = itemRepository;
+        this.bomLinkRepository    = bomLinkRepository;
+        this.inventoryService     = inventoryService;
+        this.purchaseOrderService = purchaseOrderService;
     }
 
     public List<BomExplosionResult> explodeBom(Long productId,
@@ -59,13 +62,14 @@ public class MrpService {
                     .orElseThrow(() ->
                         new ResourceNotFoundException("Item", itemId));
 
-            //  NEW — fetch current stock for this raw material
             Double onHandQuantity =
                     inventoryService.getOnHandQuantityOrZero(itemId);
 
-            //  NEW — calculate Net Requirement
             Double netRequirement =
                     Math.max(0, grossRequirement - onHandQuantity);
+
+            //  auto-generate PO if shortage exists
+            purchaseOrderService.autoGeneratePurchaseOrder(itemId, netRequirement);
 
             results.add(new BomExplosionResult(
                     item.getId(),
@@ -109,4 +113,6 @@ public class MrpService {
 
         visitedItems.remove(itemId);
     }
+
+
 }
