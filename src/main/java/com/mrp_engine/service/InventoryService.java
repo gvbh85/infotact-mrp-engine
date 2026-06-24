@@ -72,6 +72,6 @@ public class InventoryService {
                 .map(InventoryStatus::getOnHandQuantity)
                 .orElse(0.0);
     }
-
+    
     
 }

@@ -21,12 +21,12 @@ public class MrpService {
     private final ItemRepository       itemRepository;
     private final BomLinkRepository    bomLinkRepository;
     private final InventoryService     inventoryService;
-    private final PurchaseOrderService purchaseOrderService;  
+    private final PurchaseOrderService purchaseOrderService;   
 
     public MrpService(ItemRepository itemRepository,
                       BomLinkRepository bomLinkRepository,
                       InventoryService inventoryService,
-                      PurchaseOrderService purchaseOrderService) { 
+                      PurchaseOrderService purchaseOrderService) {   
         this.itemRepository       = itemRepository;
         this.bomLinkRepository    = bomLinkRepository;
         this.inventoryService     = inventoryService;
