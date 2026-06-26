@@ -3,11 +3,9 @@ package com.mrp_engine.repository;
 import com.mrp_engine.model.BomLink;
 import com.mrp_engine.model.Item;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import java.util.List;
 
-@Repository
 public interface BomLinkRepository extends JpaRepository<BomLink, Long> {
-    // If your variable in BomLink.java is "parent", this MUST be findByParent
-    List<BomLink> findByParent(Item parent);
+    // Change findByParent to findByParentItem
+    List<BomLink> findByParentItem(Item parentItem);
 }
