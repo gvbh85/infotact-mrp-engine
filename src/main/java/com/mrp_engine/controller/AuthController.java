@@ -1,6 +1,6 @@
 package com.mrp_engine.controller;
 
-import com.mrp_engine.model.User;
+import com.mrp_engine.entity.User;
 import com.mrp_engine.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

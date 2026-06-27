@@ -1,4 +1,4 @@
-package com.mrp_engine.model;
+package com.mrp_engine.entity;
 
 import jakarta.persistence.*;
 

@@ -1,71 +1,64 @@
 package com.mrp_engine.controller;
 
-import com.mrp_engine.dto.MaterialRequirementReport;
-import com.mrp_engine.model.Item;
-import com.mrp_engine.repository.ItemRepository;
-import com.mrp_engine.service.MRPService;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.mrp_engine.entity.Item;
+import com.mrp_engine.service.ItemService;
+
 
 @RestController
-@RequestMapping("/api/v1/items")
-@CrossOrigin(origins = "http://localhost:5173")
+@RequestMapping("/api/items")
+@CrossOrigin(origins = "*")
 public class ItemController {
+	
+	private final ItemService itemService;
 
-    @Autowired
-    private ItemRepository itemRepository;
-
-    @Autowired
-    private MRPService mrpService; 
-
-    // 1. Get all manufacturing items (Dropdown list source)
-    @GetMapping
-    public List<Item> getAllItems() {
-        return itemRepository.findAll();
+    public ItemController(ItemService itemService) {
+        this.itemService = itemService;
     }
 
-    // 2. Add a new component to the system
+    // GET all items
+    @GetMapping
+    public ResponseEntity<List<Item>> getAllItems() {
+        return ResponseEntity.ok(itemService.getAllItems());
+    }
+
+    // GET single item by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Item> getItemById(@PathVariable Long id) {
+        return ResponseEntity.ok(itemService.getItemById(id));
+    }
+
+    // GET only finished goods (top-level items)
+    @GetMapping("/finished-goods")
+    public ResponseEntity<List<Item>> getFinishedGoods() {
+        return ResponseEntity.ok(itemService.getFinishedGoods());
+    }
+
+    // POST create new item
     @PostMapping
     public ResponseEntity<Item> createItem(@RequestBody Item item) {
-        Item savedItem = itemRepository.save(item);
-        return ResponseEntity.ok(savedItem);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(itemService.createItem(item));
     }
 
-    // 🚀 Part 2: Explode a Bill of Materials recursively to calculate GROSS requirements
-    @GetMapping("/{id}/explode")
-    public ResponseEntity<Map<String, Integer>> explodeBOM(
-            @PathVariable Long id,
-            @RequestParam(defaultValue = "1") int quantity) {
-        
-        // 1. Fetch the raw map with complex Item objects as keys
-        Map<Item, Integer> grossRequirements = mrpService.explodeBOM(id, quantity);
-        
-        // 2. Convert to a String-keyed map (using SKU) so Jackson can cleanly convert it to JSON
-        Map<String, Integer> serializableResponse = new HashMap<>();
-        for (Map.Entry<Item, Integer> entry : grossRequirements.entrySet()) {
-            serializableResponse.put(entry.getKey().getSku(), entry.getValue());
-        }
-        
-        return ResponseEntity.ok(serializableResponse);
+    // PUT update existing item
+    @PutMapping("/{id}")
+    public ResponseEntity<Item> updateItem(@PathVariable Long id,
+                                            @RequestBody Item item) {
+        return ResponseEntity.ok(itemService.updateItem(id, item));
     }
 
-    // 📦 Part 3: Calculate NET requirements and auto-generate Purchase Orders
-    @GetMapping("/{id}/procurement-report")
-    public ResponseEntity<List<MaterialRequirementReport>> getProcurementReport(
-            @PathVariable Long id,
-            @RequestParam(defaultValue = "1") int quantity) {
-        
-        // 1. Fetch Gross requirements map from the service layer
-        Map<Item, Integer> grossRequirements = mrpService.explodeBOM(id, quantity);
-        
-        // 2. Feed gross requirements into net tracking processing logic
-        List<MaterialRequirementReport> report = mrpService.processInventoryAndProcurement(grossRequirements);
-        
-        return ResponseEntity.ok(report);
+    // DELETE item
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteItem(@PathVariable Long id) {
+        itemService.deleteItem(id);
+        return ResponseEntity.ok("Item deleted successfully.");
     }
+	
 }
