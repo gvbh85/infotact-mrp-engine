@@ -1,46 +1,48 @@
 package com.mrp_engine.controller;
 
-import com.mrp_engine.entity.User;
-import com.mrp_engine.repository.UserRepository;
+import com.mrp_engine.dto.request.LoginRequest;
+import com.mrp_engine.dto.request.RegisterRequest;
+import com.mrp_engine.dto.response.AuthResponse;
+import com.mrp_engine.service.AuthService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-import java.util.Optional;
-
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173") // Enables Vite connection
+@CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
     @Autowired
-    private UserRepository userRepository;
+    private AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Username is already taken!"));
-        }
-        // Save user directly to DB
-        userRepository.save(user);
-        return ResponseEntity.ok(Map.of("message", "User registered successfully!"));
+    public ResponseEntity<String> register(
+
+            @Valid @RequestBody RegisterRequest request) {
+
+        return ResponseEntity.ok(
+
+                authService.register(request)
+
+        );
+
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody Map<String, String> loginRequest) {
-        String username = loginRequest.get("username");
-        String password = loginRequest.get("password");
+    public ResponseEntity<AuthResponse> login(
 
-        Optional<User> userOpt = userRepository.findByUsername(username);
+            @Valid @RequestBody LoginRequest request) {
 
-        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
-            return ResponseEntity.ok(Map.of(
-                "message", "Login successful!",
-                "username", username
-            ));
-        }
+        return ResponseEntity.ok(
 
-        return ResponseEntity.status(401).body(Map.of("message", "Invalid username or password"));
+                authService.login(request)
+
+        );
+
     }
+
 }
